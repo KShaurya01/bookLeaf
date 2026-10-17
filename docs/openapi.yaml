@@ -1,0 +1,156 @@
+openapi: 3.0.3
+info:
+  title: BookLeaf Author Support Portal API
+  version: 1.0.0
+  description: REST API for author and admin support workflows.
+servers:
+  - url: /
+paths:
+  /api/auth/login:
+    post:
+      summary: Login with email and password
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [email, password]
+              properties:
+                email: { type: string, format: email }
+                password: { type: string }
+      responses:
+        "200":
+          description: Session cookie set
+        "401":
+          description: Invalid credentials
+  /api/auth/logout:
+    post:
+      summary: Clear session cookie
+      responses:
+        "200":
+          description: Logged out
+  /api/auth/me:
+    get:
+      summary: Current session user
+      responses:
+        "200":
+          description: User payload
+        "401":
+          description: Unauthorized
+  /api/books:
+    get:
+      summary: List books for current author (or all for admin)
+      responses:
+        "200":
+          description: Book list
+  /api/tickets:
+    get:
+      summary: List tickets (scoped by role; filterable)
+      parameters:
+        - in: query
+          name: status
+          schema: { type: string }
+        - in: query
+          name: category
+          schema: { type: string }
+        - in: query
+          name: priority
+          schema: { type: string }
+        - in: query
+          name: from
+          schema: { type: string, format: date }
+        - in: query
+          name: to
+          schema: { type: string, format: date }
+      responses:
+        "200":
+          description: Ticket list
+    post:
+      summary: Create ticket (author)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [subject, description]
+              properties:
+                subject: { type: string }
+                description: { type: string }
+                bookId: { type: string, nullable: true }
+                attachmentName: { type: string, nullable: true }
+      responses:
+        "201":
+          description: Created with AI classification
+  /api/tickets/{id}:
+    get:
+      summary: Get ticket detail
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema: { type: string }
+      responses:
+        "200":
+          description: Ticket
+    patch:
+      summary: Update status/category/priority or assign (admin)
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema: { type: string }
+      responses:
+        "200":
+          description: Updated ticket
+  /api/tickets/{id}/messages:
+    post:
+      summary: Send admin reply to author
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema: { type: string }
+      responses:
+        "200":
+          description: Ticket with new message
+  /api/tickets/{id}/notes:
+    post:
+      summary: Add internal note (admin only)
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema: { type: string }
+      responses:
+        "200":
+          description: Note created
+  /api/tickets/{id}/draft:
+    post:
+      summary: Generate AI draft reply
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema: { type: string }
+      responses:
+        "200":
+          description: Draft text and source (openai|mock)
+  /api/tickets/{id}/events:
+    get:
+      summary: SSE stream for ticket updates
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema: { type: string }
+      responses:
+        "200":
+          description: text/event-stream
+  /api/events/queue:
+    get:
+      summary: SSE stream for author ticket list or admin queue
+      responses:
+        "200":
+          description: text/event-stream

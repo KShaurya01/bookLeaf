@@ -1,0 +1,59 @@
+{
+  "info": {
+    "name": "BookLeaf Author Support Portal",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "Auth Login",
+      "request": {
+        "method": "POST",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"email\": \"priya.sharma@email.com\",\n  \"password\": \"author123\"\n}"
+        },
+        "url": "{{baseUrl}}/api/auth/login"
+      }
+    },
+    {
+      "name": "List Books",
+      "request": {
+        "method": "GET",
+        "url": "{{baseUrl}}/api/books"
+      }
+    },
+    {
+      "name": "Create Ticket",
+      "request": {
+        "method": "POST",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"subject\": \"Royalty not received\",\n  \"description\": \"I published 4 months ago and still have not received any royalty payout.\",\n  \"bookId\": null\n}"
+        },
+        "url": "{{baseUrl}}/api/tickets"
+      }
+    },
+    {
+      "name": "Admin Login",
+      "request": {
+        "method": "POST",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"email\": \"admin@bookleafpub.com\",\n  \"password\": \"admin123\"\n}"
+        },
+        "url": "{{baseUrl}}/api/auth/login"
+      }
+    },
+    {
+      "name": "List Tickets",
+      "request": {
+        "method": "GET",
+        "url": "{{baseUrl}}/api/tickets?status=OPEN"
+      }
+    }
+  ],
+  "variable": [{ "key": "baseUrl", "value": "http://localhost:3000" }]
+}

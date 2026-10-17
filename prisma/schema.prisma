@@ -1,0 +1,104 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id           String   @id @default(cuid())
+  email        String   @unique
+  passwordHash String
+  role         String
+  name         String
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  author          Author?
+  assignedTickets Ticket[]         @relation("Assignee")
+  internalNotes   InternalNote[]
+  ticketMessages  TicketMessage[]
+}
+
+model Author {
+  id         String   @id @default(cuid())
+  authorCode String   @unique
+  name       String
+  email      String   @unique
+  phone      String?
+  city       String?
+  joinedDate DateTime
+  userId     String   @unique
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  books      Book[]
+  tickets    Ticket[]
+}
+
+model Book {
+  id                    String    @id @default(cuid())
+  bookCode              String    @unique
+  title                 String
+  isbn                  String?
+  genre                 String?
+  publicationDate       DateTime?
+  status                String
+  mrp                   Float?
+  authorRoyaltyPerCopy  Float?
+  totalCopiesSold       Int       @default(0)
+  totalRoyaltyEarned    Float     @default(0)
+  royaltyPaid           Float     @default(0)
+  royaltyPending        Float     @default(0)
+  lastRoyaltyPayoutDate DateTime?
+  printPartner          String?
+  availableOn           String    @default("[]")
+  authorId              String
+  author                Author    @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  tickets               Ticket[]
+}
+
+model Ticket {
+  id               String   @id @default(cuid())
+  subject          String
+  description      String
+  status           String   @default("OPEN")
+  category         String   @default("GENERAL_INQUIRY")
+  priority         String   @default("MEDIUM")
+  categoryOverride Boolean  @default(false)
+  priorityOverride Boolean  @default(false)
+  aiRationale      String?
+  attachmentName   String?
+  authorId         String
+  author           Author   @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  bookId           String?
+  book             Book?    @relation(fields: [bookId], references: [id], onDelete: SetNull)
+  assigneeId       String?
+  assignee         User?    @relation("Assignee", fields: [assigneeId], references: [id], onDelete: SetNull)
+  messages         TicketMessage[]
+  internalNotes    InternalNote[]
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+}
+
+model TicketMessage {
+  id        String   @id @default(cuid())
+  ticketId  String
+  ticket    Ticket   @relation(fields: [ticketId], references: [id], onDelete: Cascade)
+  body      String
+  fromRole  String
+  authorId  String?
+  author    User?    @relation(fields: [authorId], references: [id], onDelete: SetNull)
+  isAiDraft Boolean  @default(false)
+  createdAt DateTime @default(now())
+}
+
+model InternalNote {
+  id        String   @id @default(cuid())
+  ticketId  String
+  ticket    Ticket   @relation(fields: [ticketId], references: [id], onDelete: Cascade)
+  adminId   String
+  admin     User     @relation(fields: [adminId], references: [id], onDelete: Cascade)
+  body      String
+  createdAt DateTime @default(now())
+}
